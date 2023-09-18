@@ -10,7 +10,7 @@ export default function GenFetcher({ fetcher, children, onLoadCallback }) {
     async function f() {
       try {
         const d = await fetcher();
-        setData(d);
+        setData(true);
         onLoadCallback(d);
         setError(null);
       } catch (err) {

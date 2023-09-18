@@ -10,5 +10,7 @@ export default function JsonTablePage() {
     router = useRouter(),
     { query: { slug } } = router,
     config = ({ jsph, omdb, rnm })[slug];
-  return <MainJsonSource key={slug} config={config} />;
+  if (config)
+    return <MainJsonSource key={slug} config={config} />;
+  router.push('/404');
 }

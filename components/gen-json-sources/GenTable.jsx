@@ -4,7 +4,7 @@ export default function GenTable({ data, columns }) {
   return <table className={style.gentable}>
     <thead>
       <tr>
-        {columns.map(({ name }) => <th key={name}>{name}</th>)}
+        {columns.map(({ title }) => <th key={title}>{title}</th>)}
       </tr>
     </thead>
     <tbody>

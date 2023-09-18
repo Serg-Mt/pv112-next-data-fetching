@@ -5,12 +5,32 @@ import GenTable from './GenTable';
 
 export default function MainJsonSource({ config: { fetcher, columns } }) {
   const
-    [data, setDate] = useState(null);
+    [data, setData] = useState(null),
+    columnsWithButtons = columns.concat({
+      title: 'actions', getVal: ({ id }) => <>
+        <button data-id={id} data-action='info'>ℹ️</button>
+        <button data-id={id} data-action='edit'>✏️</button>
+        <button data-id={id} data-action='del'>❌</button>
+      </>
+    });
 
-  return <>
-    <GenFetcher fetcher={fetcher} onLoadCallback={setDate} >
-      <GenTable data={data} columns={columns}/>
-      <hr/>
+  function onClick(evt) {
+    const
+      source = evt.target.closest('button[data-action][data-id]');
+    if (source) {
+      const { id, action } = source.dataset;
+      switch (action) {
+        case 'del':
+          setData(old => old.filter(el => String(el.id) !== id));
+          return;
+      }
+    }
+  }
+
+  return <div onClick={onClick}>
+    <GenFetcher fetcher={fetcher} onLoadCallback={setData} >
+      <GenTable data={data} columns={columnsWithButtons} />
     </GenFetcher>
-  </>;
+    <input type='date' />
+  </div>;
 }
