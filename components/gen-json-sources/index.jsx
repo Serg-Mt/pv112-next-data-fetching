@@ -31,6 +31,5 @@ export default function MainJsonSource({ config: { fetcher, columns } }) {
     <GenFetcher fetcher={fetcher} onLoadCallback={setData} >
       <GenTable data={data} columns={columnsWithButtons} />
     </GenFetcher>
-    <input type='date' />
   </div>;
 }
