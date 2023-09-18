@@ -4,8 +4,8 @@ import styles from './Header.module.css';
 const pages = [
   { href: '/', name: 'Home' },
   { href: '/json-table/jsph', name: 'JSPH Users' },
-  // { href: '/todo2', name: 'To Do2' },
-  // { href: '/todo3', name: 'To Do3' },
+  { href: '/json-table/omdb', name: 'OMDb Films' },
+  { href: '/json-table/rnm', name: 'Rick & Morty' },
   
 ];
 

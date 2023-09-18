@@ -10,6 +10,7 @@ export default function MainJsonSource({ config: { fetcher, columns } }) {
   return <>
     <GenFetcher fetcher={fetcher} onLoadCallback={setDate} >
       <GenTable data={data} columns={columns}/>
+      <hr/>
     </GenFetcher>
   </>;
 }
