@@ -3,9 +3,22 @@ import './index.module.sass';
 import GenFetcher from './GenFetcher';
 import GenTable from './GenTable';
 
+
+
 export default function MainJsonSource({ config: { fetcher, columns } }) {
   const
     [data, setData] = useState(null),
+    [filterStr, setFilterStr] = useState(''),
+    [sortByColumnN, setSortByColumnN] = useState(null), // number
+    filteredData = filterStr
+      ? data?.filter(el => columns.map(({ getVal }) => getVal(el))
+        .filter(x => 'string' === typeof x)
+        .some(x => x.toLowerCase().includes(filterStr.toLowerCase())))
+      : data,
+    getVal = columns[Math.abs(sortByColumnN) - 1]?.getVal || (() => null),
+    sortData = sortByColumnN
+      ? data.toSorted((a, b) => 'string' === typeof getVal(a) ? Math.sign(sortByColumnN) * getVal(a).localeCompare(getVal(b)) : 1)
+      : filteredData,
     columnsWithButtons = columns.concat({
       title: 'actions', getVal: ({ id }) => <>
         <button data-id={id} data-action='info'>ℹ️</button>
@@ -25,11 +38,20 @@ export default function MainJsonSource({ config: { fetcher, columns } }) {
           return;
       }
     }
+    const
+      th = evt.target.closest('thead th');
+    if (th) {
+      const newSortN = (Math.abs(sortByColumnN) === 1 + th.cellIndex)
+        ? -sortByColumnN
+        : 1 + th.cellIndex;
+      setSortByColumnN(newSortN);
+    }
   }
 
   return <div onClick={onClick}>
+    <input value={filterStr} onInput={evt => setFilterStr(evt.target.value)} />
     <GenFetcher fetcher={fetcher} onLoadCallback={setData} >
-      <GenTable data={data} columns={columnsWithButtons} />
+      <GenTable data={sortData} columns={columnsWithButtons} sortByColumnN={sortByColumnN} />
     </GenFetcher>
   </div>;
 }
