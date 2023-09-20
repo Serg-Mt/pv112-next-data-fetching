@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import './index.module.sass';
-import GenFetcher from './GenFetcher';
+// import GenFetcher from './GenFetcher';
 import GenTable from './GenTable';
+import useSWR from 'swr';
+import toast from 'react-hot-toast';
 
 function Form({ columns, values, setValues }) {
   return <tr>
@@ -20,9 +22,10 @@ function Form({ columns, values, setValues }) {
 }
 
 
-export default function MainJsonSource({ config: { fetcher, columns, genObj } }) {
+export default function MainJsonSource({ config: { fetcher, columns, genObj, API_URL } }) {
   const
-    [data, setData] = useState(null),
+    // [data, setData] = useState(null),
+    { data, error, isLoading, isValidating, mutate } = useSWR(API_URL, fetcher),
     [filterStr, setFilterStr] = useState(''),
     [sortByColumnN, setSortByColumnN] = useState(null), // number
     [values, setValues] = useState(columns.map(() => '-')),
@@ -44,15 +47,16 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj } })
       </>
     });
 
-  function onClick(evt) {
+  async function onClick(evt) {
     const
       source = evt.target.closest('button[data-action][data-id]');
     if (source) {
       const { id, action } = source.dataset;
       switch (action) {
-        case 'del':
-          setData(old => old.filter(el => String(el.id) !== id));
-          return;
+        // case 'del':
+        //   setData(old => old.filter(el => String(el.id) !== id));
+        //   // fetch(API_URL+id,{method:'DELETE'});
+        //   return;
         case 'edit':
           // eslint-disable-next-line no-case-declarations
           const index = data.findIndex(obj => id === String(obj.id));
@@ -62,22 +66,54 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj } })
         case 'cancel':
           setEditetId(null);
           setValues(columns.map(() => '_'));
-          return;
+          return;          
         case 'ok':
-          if (editetId) { // edit
-            const index = data.findIndex(obj => editetId === String(obj.id)),
-              newObj = data[index];
-            columns.forEach(({setVal},i)=>setVal && Object.assign(newObj,setVal(values[i])));
-            setData(data.with(index, newObj));
-          } else { // add
-            const newObj = genObj();
-            columns.forEach(({setVal},i)=>setVal && Object.assign(newObj,setVal(values[i])));
-            setData(data.concat(newObj));
-          }
+        //   if (editetId) { // edit
+        //     const index = data.findIndex(obj => editetId === String(obj.id)),
+        //       newObj = data[index];
+        //     columns.forEach(({ setVal }, i) => setVal && Object.assign(newObj, setVal(values[i])));
+        //     setData(data.with(index, newObj));
+        //   } else { // add
+        //     const newObj = genObj();
+        //     columns.forEach(({ setVal }, i) => setVal && Object.assign(newObj, setVal(values[i])));
+        //     setData(data.concat(newObj));
+        //   }
           setEditetId(null);
           setValues(columns.map(() => '_'));
-          return;
+          // return;
       }
+      let optimisticData;
+      const promise = (() => {
+        switch (action) {
+          case 'del':
+            optimisticData = data.filter(el => String(el.id) !== id);
+            return fetch(API_URL + id, { method: 'DELETE' });
+          case 'ok':
+            if (editetId) { // edit
+            } else { // add
+              const newObj = genObj();
+              columns.forEach(({ setVal }, i) => setVal && Object.assign(newObj, setVal(values[i])));
+              optimisticData = data.concat(newObj)
+              return fetch(API_URL,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(newObj)
+                })
+                .then(async res => {
+                  if (!res.ok) {
+                    throw (new Error(res.status + ' ' + res.statusText));
+                  }
+                });
+            }
+        }
+      })();
+      toast.promise(promise, {
+        loading: 'Fetching ' + action,
+        success: 'ok',
+        error: (err) => `${err.toString()}`,
+      });
+      await mutate(promise.then(fetcher).catch(fetcher), { optimisticData, populateCache: true, revalidate: false });
     }
     const
       th = evt.target.closest('thead th');
@@ -88,13 +124,18 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj } })
       setSortByColumnN(newSortN);
     }
   }
-
+  console.log('data=', data);
   return <div onClick={onClick}>
     <input value={filterStr} onInput={evt => setFilterStr(evt.target.value)} />
-    <GenFetcher fetcher={fetcher} onLoadCallback={setData} >
+    <div style={{ position: 'absolute', fontSize: 'xxx-large' }}>
+      {isLoading && <>⌛</>}
+      {isValidating && <>👁</>}
+    </div>
+    {error && <>Error {error.toString()}</>}
+    {data &&
       <GenTable data={sortData} columns={columnsWithButtons} sortByColumnN={sortByColumnN} editetId={editetId}>
         <Form columns={columns} values={values} setValues={setValues} />
-      </GenTable>
-    </GenFetcher>
+      </GenTable>}
+
   </div>;
 }
