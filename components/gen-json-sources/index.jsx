@@ -93,7 +93,7 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj, API
             } else { // add
               const newObj = genObj();
               columns.forEach(({ setVal }, i) => setVal && Object.assign(newObj, setVal(values[i])));
-              optimisticData = data.concat(newObj)
+              optimisticData = data.concat(newObj);
               return fetch(API_URL,
                 {
                   method: 'POST',
