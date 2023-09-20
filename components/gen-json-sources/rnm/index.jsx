@@ -5,7 +5,7 @@ const config = {
     { title: 'Image', getVal: ({ image, name }) => <img src={image} alt={name} /> },
     { title: 'Status', getVal: ({ status }) => status },
   ],
-
+  genObj() { return { id: Math.random() }; },
   async fetcher() {
     const
       response = await fetch('https://rickandmortyapi.com/api/character/?page=1');

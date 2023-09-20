@@ -6,7 +6,7 @@ const config = {
     { title: 'Year', getVal: ({ Year }) => Year },
     { title: 'Poster', getVal: ({ Poster }) => <img src={Poster} alt={name} /> },
   ],
-
+  genObj() { return { id: Math.random() }; },
   async fetcher() {
     const
       response = await fetch('https://www.omdbapi.com/?apikey=a2b07930&s=green');
