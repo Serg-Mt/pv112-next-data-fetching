@@ -6,6 +6,7 @@ const pages = [
   { href: '/json-table/jsph', name: 'JSPH Users' },
   { href: '/json-table/omdb', name: 'OMDb Films' },
   { href: '/json-table/rnm', name: 'Rick & Morty' },
+  { href: '/calendar-demo', name:'Calendar'}
   
 ];
 
