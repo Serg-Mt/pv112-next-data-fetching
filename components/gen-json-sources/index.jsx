@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import './index.module.sass';
-// import GenFetcher from './GenFetcher';
-import GenTable from './GenTable';
-import useSWR from 'swr';
 import toast from 'react-hot-toast';
+import useSWR from 'swr';
+import GenTable from './GenTable';
+import './index.module.sass';
 
 function Form({ columns, values, setValues }) {
   return <tr>
@@ -29,7 +28,7 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj, API
     [filterStr, setFilterStr] = useState(''),
     [sortByColumnN, setSortByColumnN] = useState(null), // number
     [values, setValues] = useState(columns.map(() => '-')),
-    [editetId, setEditetId] = useState(null),
+    [editedId, setEditedId] = useState(null),
     filteredData = filterStr
       ? data?.filter(el => columns.map(({ getVal }) => getVal(el))
         .filter(x => 'string' === typeof x)
@@ -61,15 +60,15 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj, API
           // eslint-disable-next-line no-case-declarations
           const index = data.findIndex(obj => id === String(obj.id));
           setValues(columns.map(({ getVal }) => getVal(data[index])));
-          setEditetId(id);
+          setEditedId(id);
           return;
         case 'cancel':
-          setEditetId(null);
+          setEditedId(null);
           setValues(columns.map(() => '_'));
           return;          
         case 'ok':
-        //   if (editetId) { // edit
-        //     const index = data.findIndex(obj => editetId === String(obj.id)),
+        //   if (editedId) { // edit
+        //     const index = data.findIndex(obj => editedId === String(obj.id)),
         //       newObj = data[index];
         //     columns.forEach(({ setVal }, i) => setVal && Object.assign(newObj, setVal(values[i])));
         //     setData(data.with(index, newObj));
@@ -78,7 +77,7 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj, API
         //     columns.forEach(({ setVal }, i) => setVal && Object.assign(newObj, setVal(values[i])));
         //     setData(data.concat(newObj));
         //   }
-          setEditetId(null);
+          setEditedId(null);
           setValues(columns.map(() => '_'));
           // return;
       }
@@ -89,7 +88,7 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj, API
             optimisticData = data.filter(el => String(el.id) !== id);
             return fetch(API_URL + id, { method: 'DELETE' });
           case 'ok':
-            if (editetId) { // edit
+            if (editedId) { // edit
             } else { // add
               const newObj = genObj();
               columns.forEach(({ setVal }, i) => setVal && Object.assign(newObj, setVal(values[i])));
@@ -124,7 +123,7 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj, API
       setSortByColumnN(newSortN);
     }
   }
-  console.log('data=', data);
+
   return <div onClick={onClick}>
     <input value={filterStr} onInput={evt => setFilterStr(evt.target.value)} />
     <div style={{ position: 'absolute', fontSize: 'xxx-large' }}>
@@ -133,7 +132,7 @@ export default function MainJsonSource({ config: { fetcher, columns, genObj, API
     </div>
     {error && <>Error {error.toString()}</>}
     {data &&
-      <GenTable data={sortData} columns={columnsWithButtons} sortByColumnN={sortByColumnN} editetId={editetId}>
+      <GenTable data={sortData} columns={columnsWithButtons} sortByColumnN={sortByColumnN} editedId={editedId}>
         <Form columns={columns} values={values} setValues={setValues} />
       </GenTable>}
 
